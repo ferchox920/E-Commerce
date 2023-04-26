@@ -26,9 +26,12 @@
     "@nestjs/mongoose": "^9.2.2",
     "@nestjs/platform-express": "^9.0.0",
     "@types/config": "^3.3.0",
+    "@types/nodemailer": "^6.4.7",
+    "bcrypt": "^5.1.0",
     "class-validator": "^0.14.0",
     "config": "^3.3.9",
     "mongoose": "^7.0.5",
+    "nodemailer": "^6.9.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },

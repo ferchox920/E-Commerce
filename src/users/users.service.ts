@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { userTypes } from 'src/shared/schema/user';
 import  config  from 'config';
 import { UserRepository } from 'src/shared/repositories/user.repository';
+import { generateHashPassword } from 'src/shared/utility/password-manager';
 
 @Injectable()
 export class UsersService {
