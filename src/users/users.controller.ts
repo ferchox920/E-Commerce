@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {Response} from 'express'
+import { userTypes } from 'src/shared/schema/user';
 
 @Controller('users')
 export class UsersController {
@@ -13,12 +14,20 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
   
-   @Post('/login')
+  @Post('/login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginUser: { email: string; password: string }, @Res({passthrough:true}) respose:Response, ) {
-    const loginRes = await this.usersService.login(loginUser.email,loginUser.password);
-    if(loginRes.success){
-      respose.cookie('_auth_token', loginRes.result?.token,{httpOnly:true})
+  async login(
+    @Body() loginUser: { email: string; password: string },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const loginRes = await this.usersService.login(
+      loginUser.email,
+      loginUser.password,
+    );
+    if (loginRes.success) {
+      response.cookie('_digi_auth_token', loginRes.result?.token, {
+        httpOnly: true,
+      });
     }
     delete loginRes.result?.token;
     return loginRes;

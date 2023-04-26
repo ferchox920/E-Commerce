@@ -36,14 +36,39 @@ export const sendEmail = async (
 };
 
 const getEmailTemplate = (templateName: string, templateVars: Record<string, any>) => {
-  switch (templateName) {
-    case 'create-user':
-      // Use templateVars to fill in the placeholders in the email template for this type
-      return '<p>Welcome to our platform!</p>';
-    case 'change-password':
-      // Use templateVars to fill in the placeholders in the email template for this type
-      return '<p>Your password has been changed.</p>';
-    default:
-      throw new Error(`Unsupported email template name: ${templateName}`);
-  }
-};
+    switch (templateName) {
+      case 'create-user':
+        // Use templateVars to fill in the placeholders in the email template for this type
+        return `<p>Bienvenido a CHE QUE BARATO!</p>
+                <p>Gracias por unirte a nosotros. Esperamos que disfrutes de tus compras en nuestra tienda en línea.</p>
+                <p>Para acceder a tu cuenta, utiliza el correo electrónico y la contraseña que proporcionaste al registrarte.</p>
+                <p>¡Que tengas un gran día!</p>`;
+      case 'change-password':
+        // Use templateVars to fill in the placeholders in the email template for this type
+        return `<p>Tu contraseña ha sido cambiada exitosamente.</p>
+                <p>Si no realizaste este cambio, por favor, contáctanos de inmediato.</p>`;
+      case 'forgot-password':
+        // Use templateVars to fill in the placeholders in the email template for this type
+        return `<p>Recibimos una solicitud para restablecer la contraseña de tu cuenta de CHE QUE BARATO.</p>
+                <p>Para cambiar tu contraseña, haz clic en el siguiente enlace:</p>
+                <p><a href="${templateVars.resetPasswordUrl}">Restablecer mi contraseña</a></p>
+                <p>Si no realizaste esta solicitud, ignora este correo electrónico y toma medidas de seguridad adicionales para proteger tu cuenta.</p>`;
+      case 'order-success':
+        // Use templateVars to fill in the placeholders in the email template for this type
+        return `<p>Tu pedido en CHE QUE BARATO ha sido procesado satisfactoriamente.</p>
+                <p>Detalles del pedido:</p>
+                <ul>
+                  <li>Fecha de pedido: ${templateVars.orderDate}</li>
+                  <li>Número de pedido: ${templateVars.orderNumber}</li>
+                  <li>Artículos pedidos:</li>
+                  <ul>
+                    ${templateVars.orderItems.map((item: any) => `<li>${item.name} - Cantidad: ${item.quantity}</li>`)}
+                  </ul>
+                  <li>Total del pedido: ${templateVars.orderTotal}</li>
+                </ul>
+                <p>Gracias por comprar en CHE QUE BARATO. Esperamos que disfrutes de tus productos.</p>`;
+      default:
+        throw new Error(`Nombre de template de correo electrónico no soportado: ${templateName}`);
+    }
+  };
+  

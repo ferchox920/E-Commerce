@@ -30,6 +30,7 @@
     "bcrypt": "^5.1.0",
     "class-validator": "^0.14.0",
     "config": "^3.3.9",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.5",
     "nodemailer": "^6.9.1",
     "reflect-metadata": "^0.1.13",
