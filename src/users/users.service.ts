@@ -57,8 +57,8 @@ export class UsersService {
       if (newUser.type !== userTypes.ADMIN) {
         await sendEmail(
           newUser.email,
-          config.get('emailService.emailTemplates.verifyEmail'),
-          'Email verification - Digizone',
+          'create-user',
+          'Email verification',
           {
             customerName: newUser.name,
             customerEmail: newUser.email,
@@ -112,6 +112,38 @@ export class UsersService {
           },
           token,
         },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async verifyEmail(otp: string, email: string) {
+    try {
+      const user = await this.userDB.findOne({
+        email,
+      });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      if (user.otp !== otp) {
+        throw new Error('Invalid otp');
+      }
+      if (user.otpExpiryTime < new Date()) {
+        throw new Error('Otp expired');
+      }
+      await this.userDB.updateOne(
+        {
+          email,
+        },
+        {
+          isVerified: true,
+        },
+      );
+
+      return {
+        success: true,
+        message: 'Email verified successfully. you can login now',
       };
     } catch (error) {
       throw error;
