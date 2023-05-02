@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {Response} from 'express'
 import { userTypes } from 'src/shared/schema/user';
+import { sendEmail } from 'src/shared/utility/mail-handler';
 
 @Controller('users')
 export class UsersController {
@@ -11,7 +12,10 @@ export class UsersController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const newUser = await this.usersService.create(createUserDto);
+    // Aquí puedes enviar un correo electrónico al usuario recién creado
+    await sendEmail(createUserDto.email, 'create-user', 'Bienvenido a CHE QUE BARATO!');
+    return newUser;
   }
   
   @Post('/login')
