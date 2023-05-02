@@ -10,6 +10,10 @@ export class UserRepository {
   async findOne(query: any) {
     return this.userModel.findOne(query);
   }
+  
+  async find(query: any) {
+    return this.userModel.findOne(query);
+  }
 
   async create(data: Record<string, any>) {
     return await this.userModel.create(data);

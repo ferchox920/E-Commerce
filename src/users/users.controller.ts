@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus , Res} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Res,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {Response} from 'express'
 import { userTypes } from 'src/shared/schema/user';
+
 
 @Controller('users')
 export class UsersController {
@@ -25,7 +39,7 @@ export class UsersController {
       loginUser.password,
     );
     if (loginRes.success) {
-      response.cookie('_digi_auth_token', loginRes.result?.token, {
+      response.cookie('_auth_token', loginRes.result?.token, {
         httpOnly: true,
       });
     }
@@ -38,12 +52,25 @@ export class UsersController {
   async verifyEmail(@Param('otp') otp: string, @Param('email') email: string) {
     return await this.usersService.verifyEmail(otp, email);
   }
+
+  @Get('/send-otp/:email')
+  async sendOtpEmail(@Param('email') email: string) {
+    return await this.usersService.sendOtpEmail( email);
+  }
+  @Put('/logout')
+  async logout(@Res() res: Response) {
+    res.clearCookie('_auth_token');
+    return res.status(HttpStatus.OK).json({
+      success: true,
+      message: 'Logout successfully',
+    });
+  }
+  
   
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async findAll(@Query('type') type: string) {
+    return await this.usersService.findAll(type);
   }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);

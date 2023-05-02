@@ -55,16 +55,11 @@ export class UsersService {
       });
 
       if (newUser.type !== userTypes.ADMIN) {
-        await sendEmail(
-          newUser.email,
-          'create-user',
-          'Email verification',
-          {
-            customerName: newUser.name,
-            customerEmail: newUser.email,
-            otp,
-          },
-        );
+        await sendEmail(newUser.email, 'create-user', 'Email verification', {
+          customerName: newUser.name,
+          customerEmail: newUser.email,
+          otp,
+        });
       }
 
       return {
@@ -150,8 +145,57 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async sendOtpEmail(email: string) {
+    try {
+      const user = await this.userDB.findOne(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      if (user.isVerified) {
+        throw new Error('Email already verified');
+      }
+      const otp = Math.floor(Math.random() * 900000) + 100000;
+
+      const otpExpiryTime = new Date();
+      otpExpiryTime.setMinutes(otpExpiryTime.getMinutes() + 10);
+
+      await this.userDB.updateOne(
+        {
+          email,
+        },
+        {
+          otp,
+          otpExpiryTime,
+        },
+      );
+      await sendEmail(user.email, 'create-user', 'Email verification', {
+        customerName: user.name,
+        customerEmail: user.email,
+        otp,
+      });
+      return {
+        success: true,
+        message: 'Otp sent successfully',
+        result: { email: user.email },
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll(type: string) {
+    try {
+      const users = await this.userDB.find({
+        type,
+      });
+      return {
+        success: true,
+        message: 'Users fetched successfully',
+        result: users,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   findOne(id: number) {
