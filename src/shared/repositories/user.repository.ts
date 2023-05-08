@@ -3,22 +3,24 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Users } from '../schema/user';
 
-
 @Injectable()
 export class UserRepository {
   constructor(@InjectModel(Users.name) private userModel: Model<Users>) {}
 
-  async findOne(query: any){
+  async findOne(query: any) {
+    return this.userModel.findOne(query);
+  }
+  
+  async find(query: any) {
     return this.userModel.findOne(query);
   }
 
-  async create(data: Record<string, any>){
+  async create(data: Record<string, any>) {
     return await this.userModel.create(data);
-   
   }
 
-  async updateUser(id: string, userDto: any): Promise<Users> {
-    return this.userModel.findByIdAndUpdate(id, userDto, { new: true }).exec();
+  async updateOne(query: any, data: Record<string, any>) {
+    return this.userModel.updateOne(query, data);
   }
 
   async deleteUser(id: string): Promise<Users> {

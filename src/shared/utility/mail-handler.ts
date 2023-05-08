@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import config from 'config';
+import { link } from 'fs';
 
 export const sendEmail = async (
   to: string,
@@ -13,15 +14,15 @@ export const sendEmail = async (
       port: 465,
       secure: true,
       auth: {
-        user: config.get('fernandoramones92@gmail.com'),
-        pass: config.get('obyrebzjzadcwyuq'),
+        user: 'fernandoramones92@gmail.com',
+        pass:'obyrebzjzadcwyuq',
       },
     });
 
     const emailTemplate = getEmailTemplate(templateName, templateVars);
 
     const mailOptions: nodemailer.SendMailOptions = {
-        from: config.get('fernandoramones92@gmail.com') as string,
+        from: 'fernandoramones92@gmail.com',
         to,
         subject,
         html: emailTemplate,
@@ -35,12 +36,23 @@ export const sendEmail = async (
   }
 };
 
+
+
 const getEmailTemplate = (templateName: string, templateVars: Record<string, any>) => {
+  
     switch (templateName) {
       case 'create-user':
         // Use templateVars to fill in the placeholders in the email template for this type
+
+        // {
+        //   customerName: newUser.name,
+        //   customerEmail: newUser.email,
+        //   otp,
+        // }
         return `<p>Bienvenido a CHE QUE BARATO!</p>
+                <p>${templateVars.name}</p>
                 <p>Gracias por unirte a nosotros. Esperamos que disfrutes de tus compras en nuestra tienda en línea.</p>
+                <a href="http://${config.get('host')}:${config.get('port')}/users/verify-email/${templateVars.otp}/${templateVars.customerEmail}">Haz clic aquí para verificar tu correo electrónico</a>
                 <p>Para acceder a tu cuenta, utiliza el correo electrónico y la contraseña que proporcionaste al registrarte.</p>
                 <p>¡Que tengas un gran día!</p>`;
       case 'change-password':
