@@ -42,15 +42,9 @@ const getEmailTemplate = (templateName: string, templateVars: Record<string, any
   
     switch (templateName) {
       case 'create-user':
-        // Use templateVars to fill in the placeholders in the email template for this type
-
-        // {
-        //   customerName: newUser.name,
-        //   customerEmail: newUser.email,
-        //   otp,
-        // }
+  
         return `<p>Bienvenido a CHE QUE BARATO!</p>
-                <p>${templateVars.name}</p>
+                <p>${templateVars.customerName}</p>
                 <p>Gracias por unirte a nosotros. Esperamos que disfrutes de tus compras en nuestra tienda en línea.</p>
                 <a href="http://${config.get('host')}:${config.get('port')}/users/verify-email/${templateVars.otp}/${templateVars.customerEmail}">Haz clic aquí para verificar tu correo electrónico</a>
                 <p>Para acceder a tu cuenta, utiliza el correo electrónico y la contraseña que proporcionaste al registrarte.</p>

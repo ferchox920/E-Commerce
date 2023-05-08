@@ -57,8 +57,8 @@ export class UsersService {
       if (newUser.type !== userTypes.ADMIN) {
         await sendEmail(
           newUser.email,
-          config.get('emailService.emailTemplates.verifyEmail'),
-          'Email verification - Digizone',
+          config.get('emailTemplates.create-user'),
+          'Email verification',
           {
             customerName: newUser.name,
             customerEmail: newUser.email,
