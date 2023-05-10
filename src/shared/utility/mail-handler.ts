@@ -15,7 +15,7 @@ export const sendEmail = async (
       secure: true,
       auth: {
         user: 'fernandoramones92@gmail.com',
-        pass:'obyrebzjzadcwyuq',
+        pass:config.get('tokenGmail'),
       },
     });
 
@@ -42,19 +42,14 @@ const getEmailTemplate = (templateName: string, templateVars: Record<string, any
   
     switch (templateName) {
       case 'create-user':
-        // Use templateVars to fill in the placeholders in the email template for this type
-
-        // {
-        //   customerName: newUser.name,
-        //   customerEmail: newUser.email,
-        //   otp,
-        // }
+  
         return `<p>Bienvenido a CHE QUE BARATO!</p>
-                <p>${templateVars.name}</p>
+                <p>${templateVars.customerName}</p>
                 <p>Gracias por unirte a nosotros. Esperamos que disfrutes de tus compras en nuestra tienda en línea.</p>
                 <a href="http://${config.get('host')}:${config.get('port')}/users/verify-email/${templateVars.otp}/${templateVars.customerEmail}">Haz clic aquí para verificar tu correo electrónico</a>
                 <p>Para acceder a tu cuenta, utiliza el correo electrónico y la contraseña que proporcionaste al registrarte.</p>
                 <p>¡Que tengas un gran día!</p>`;
+
       case 'change-password':
         // Use templateVars to fill in the placeholders in the email template for this type
         return `<p>Tu contraseña ha sido cambiada exitosamente.</p>
@@ -62,9 +57,10 @@ const getEmailTemplate = (templateName: string, templateVars: Record<string, any
       case 'forgot-password':
         // Use templateVars to fill in the placeholders in the email template for this type
         return `<p>Recibimos una solicitud para restablecer la contraseña de tu cuenta de CHE QUE BARATO.</p>
-                <p>Para cambiar tu contraseña, haz clic en el siguiente enlace:</p>
-                <p><a href="${templateVars.resetPasswordUrl}">Restablecer mi contraseña</a></p>
-                <p>Si no realizaste esta solicitud, ignora este correo electrónico y toma medidas de seguridad adicionales para proteger tu cuenta.</p>`;
+                <p>Te daremos una clave temporal</p>
+                <p>La clave es la siguiente</p>
+                <p>${templateVars.newPasswordnewPassword}</p>
+                <p>Te sugerimos cambiar tu clave al ingresar al portal.</p>`;
       case 'order-success':
         // Use templateVars to fill in the placeholders in the email template for this type
         return `<p>Tu pedido en CHE QUE BARATO ha sido procesado satisfactoriamente.</p>

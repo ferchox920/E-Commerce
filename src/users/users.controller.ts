@@ -27,8 +27,6 @@ export class UsersController {
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     const newUser = await this.usersService.create(createUserDto);
-    // Aquí puedes enviar un correo electrónico al usuario recién creado
-    await sendEmail(createUserDto.email, 'create-user', 'Bienvenido a CHE QUE BARATO!');
     return newUser;
   }
   
@@ -59,8 +57,9 @@ export class UsersController {
 
   @Get('/send-otp/:email')
   async sendOtpEmail(@Param('email') email: string) {
-    return await this.usersService.sendOtpEmail( email);
+    return await this.usersService.sendOtpEmail(email);
   }
+
   @Put('/logout')
   async logout(@Res() res: Response) {
     res.clearCookie('_auth_token');
@@ -69,7 +68,15 @@ export class UsersController {
       message: 'Logout successfully',
     });
   }
-  
+  @Get('/forgot-password/:email')
+  async forgotPassword(@Param('email') email: string) {
+    return await this.usersService.forgotPassword(email);
+  }
+
+  @Patch('/update-name/:id')
+  async updatePasswordOrName(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.updatePasswordOrName(id, updateUserDto);
+  }
   
   @Get()
   async findAll(@Query('type') type: string) {

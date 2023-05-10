@@ -9,12 +9,18 @@ import { UsersController } from './users.controller';
 import { UserRepository } from 'src/shared/repositories/user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema, Users } from 'src/shared/schema/user';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from 'src/shared/middleware/roles.guard';
+import { AuthMiddleware } from 'src/shared/middleware/auth';
 @Module({
   controllers: [UsersController],
   providers: [
     UsersService,
     UserRepository,
-    
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    }, 
   ],
   imports: [
     MongooseModule.forFeature([
@@ -26,4 +32,10 @@ import { UserSchema, Users } from 'src/shared/schema/user';
   ],
 
 })
-export class UsersModule {}
+export class UsersModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: '/users', method: RequestMethod.GET });
+  }
+}
