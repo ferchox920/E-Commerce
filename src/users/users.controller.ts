@@ -16,8 +16,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {Response} from 'express'
-import { userTypes } from 'src/shared/schema/user';
-import { sendEmail } from 'src/shared/utility/mail-handler';
+
 
 
 @Controller('users')

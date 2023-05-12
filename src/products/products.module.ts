@@ -1,9 +1,38 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
+import { ProductRepository } from 'src/shared/repositories/product.repository';
+import { UserRepository } from 'src/shared/repositories/user.repository';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from 'src/shared/middleware/roles.guard';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ProductSchema, Products } from 'src/shared/schema/products';
+import { UserSchema, Users } from 'src/shared/schema/user';
+import { StripeModule } from 'nestjs-stripe';
+import config from 'config';
+import { AuthMiddleware } from 'src/shared/middleware/auth';
 
 @Module({
   controllers: [ProductsController],
-  providers: [ProductsService]
+  providers: [
+    ProductsService,
+    ProductRepository,
+    UserRepository,
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
+  imports: [
+    MongooseModule.forFeature([{ name: Products.name, schema: ProductSchema }]),
+    MongooseModule.forFeature([{ name: Users.name, schema: UserSchema }]),
+   
+    StripeModule.forRoot({
+      apiKey: config.get('stripe.secret_key'),
+      apiVersion: '2022-11-15',
+    }),
+  ],
 })
-export class ProductsModule {}
+export class ProductsModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthMiddleware).forRoutes(ProductsController);
+  }
+}
