@@ -35,6 +35,7 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.5",
     "nodemailer": "^6.9.1",
+    "qs-to-mongo": "^3.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },

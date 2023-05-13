@@ -4,9 +4,12 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { InjectStripe } from 'nestjs-stripe';
 import cloudinary from 'cloudinary';
+import qs2m from 'qs-to-mongo';
+import { unlinkSync } from 'fs';
 import config from 'config';
 import Stripe from 'stripe';
 import { Products } from 'src/shared/schema/products';
+import { GetProductQueryDto } from './dto/get-product-query-dto';
 
 @Injectable()
 export class ProductsService {
@@ -21,30 +24,104 @@ export class ProductsService {
       api_secret: config.get('cloudinary.api_secret'),
     });
   }
-  async createProduct(createProductDto: CreateProductDto): Promise<{
-    message: string;
-    result: Products;
-    success: boolean;
-  }> {
-    try {
-      if (!createProductDto.stripeProductId) {
-        const createdProductInStripe = await this.stripeClient.products.create({
-          name: createProductDto.productName,
-          description: createProductDto.description,
-        });
-        createProductDto.stripeProductId = createdProductInStripe.id;
-      }
+async createProduct(createProductDto: CreateProductDto): Promise<{
+  message: string;
+  result: Products;
+  success: boolean;
+}> {
+  try {
+    // Si no se proporciona un id de producto de Stripe, crear un nuevo producto en Stripe
+    if (!createProductDto.stripeProductId) {
+      const createdProductInStripe = await this.stripeClient.products.create({
+        name: createProductDto.productName,
+        description: createProductDto.description,
+      });
+      createProductDto.stripeProductId = createdProductInStripe.id;
+    }
 
-      const createdProductInDB = await this.productDB.create(createProductDto);
+    // Crear un nuevo producto en la base de datos
+    const createdProductInDB = await this.productDB.create(createProductDto);
+
+    // Devolver una respuesta con un mensaje de éxito, el producto creado y un booleano que indica el éxito
+    return {
+      message: 'Product created successfully',
+      result: createdProductInDB,
+      success: true,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+
+async findAllProducts(query: GetProductQueryDto) {
+  try {
+    let callForHomePage = false;
+    if (query.homepage) {
+      callForHomePage = true;
+    }
+    delete query.homepage;
+
+    const { criteria, options, links } = qs2m(query);
+
+    if (callForHomePage) {
+      const products = await this.productDB.findProductWithGroupBy();
       return {
-        message: 'Product created successfully',
-        result: createdProductInDB,
+        message:
+          products.length > 0
+            ? 'Products fetched successfully'
+            : 'No products found',
+        result: products,
         success: true,
       };
-    } catch (error) {
-      throw error;
-    } 
+    }
+
+    const { totalProductCount, products } = await this.productDB.find(
+      criteria,
+      options,
+    );
+
+    const result = products.map((product) => {
+      return {
+        id: product._id,
+        productName: product.productName,
+        description: product.description,
+        image: product.image,
+        gender: product.gender,
+        brand: product.brand,
+        category: product.category,
+        color: product.color,
+        size: product.size,
+        material: product.material,
+        price: product.price,
+        discount: product.discount,
+        stock: product.stock,
+        avgRating: product.avgRating,
+        feedbackDetails: product.feedbackDetails,
+        imageDetails: product.imageDetails,
+        highlights: product.highlights,
+      };
+    });
+
+    return {
+      message:
+        result.length > 0 ? 'Products fetched successfully' : 'No products found',
+      result: {
+        metadata: {
+          skip: options.skip || 0,
+          limit: options.limit || 10,
+          total: totalProductCount,
+          pages: options.limit ? Math.ceil(totalProductCount / options.limit) : 1,
+          links: links('/', totalProductCount),
+        },
+        products: result,
+      },
+      success: true,
+    };
+  } catch (error) {
+    throw error;
   }
+}
+
 
   async findOneProduct(id: string): Promise<{
     message: string;
@@ -71,8 +148,93 @@ export class ProductsService {
       throw error;
     }
   }
-  findAll() {
-    return `This action returns all products`;
+
+
+  async updateProduct(
+    id: string,
+    updateProductDto: CreateProductDto,
+  ): Promise<{
+    message: string;
+    result: Products;
+    success: boolean;
+  }> {
+    try {
+      const productExist = await this.productDB.findOne({ _id: id });
+      if (!productExist) {
+        throw new Error('Product does not exist');
+      }
+      const updatedProduct = await this.productDB.findOneAndUpdate(
+        { _id: id },
+        updateProductDto,
+        
+      );
+      if (!updateProductDto.stripeProductId)
+        await this.stripeClient.products.update(updatedProduct.stripeProductId, {
+          name: updateProductDto.productName,
+          description: updateProductDto.description,
+        });
+      return {
+        message: 'Product updated successfully',
+        result: updatedProduct,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async uploadProductImage(
+    id: string,
+    file: any,
+  ): Promise<{
+    message: string;
+    success: boolean;
+    result: string;
+  }> {
+    try {
+      const product = await this.productDB.findOne({ _id: id });
+      if (!product) {
+        throw new Error('Product does not exist');
+      }
+      if (product.imageDetails?.public_id) {
+        await cloudinary.v2.uploader.destroy(product.imageDetails.public_id, {
+          invalidate: true,
+        });
+      }
+
+      const resOfCloudinary = await cloudinary.v2.uploader.upload(file.path, {
+        folder: config.get('cloudinary.folderPath'),
+        public_id: `${config.get('cloudinary.publicId_prefix')}${Date.now()}`,
+        transformation: [
+          {
+            width: config.get('cloudinary.bigSize').toString().split('X')[0],
+            height: config.get('cloudinary.bigSize').toString().split('X')[1],
+            crop: 'fill',
+          },
+          { quality: 'auto' },
+        ],
+      });
+      unlinkSync(file.path);
+      await this.productDB.findOneAndUpdate(
+        { _id: id },
+        {
+          imageDetails: resOfCloudinary,
+          image: resOfCloudinary.secure_url,
+        },
+      );
+
+      await this.stripeClient.products.update(product.stripeProductId, {
+        images: [resOfCloudinary.secure_url],
+      });
+
+      return {
+        message: 'Image uploaded successfully',
+        success: true,
+        result: resOfCloudinary.secure_url,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   findOne(id: number) {
