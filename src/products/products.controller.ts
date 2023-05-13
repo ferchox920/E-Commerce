@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { Roles } from 'src/shared/middleware/role.decorators';
 import { userTypes } from 'src/shared/schema/user';
 import config from 'config';
@@ -38,10 +37,6 @@ export class ProductsController {
     return this.productsService.findAllProducts(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
-  }
 
   @Patch(':id')
   @Roles(userTypes.ADMIN)
@@ -51,6 +46,7 @@ export class ProductsController {
   ) {
     return await this.productsService.updateProduct(id, updateProductDto);
   }
+
   @Post('/:id/image')
   @Roles(userTypes.ADMIN)
   @UseInterceptors(
@@ -68,8 +64,27 @@ export class ProductsController {
     return await this.productsService.uploadProductImage(id, file);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  @Put('/:id/image')
+  @Roles(userTypes.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('productImage', {
+      dest: config.get('fileStoragePath'),
+      limits: {
+        fileSize: 3145728, // 3 MB
+      },
+    }),
+  )
+  async modifyProductImage(
+    @Param('id') id: string,
+    @UploadedFile() file: ParameterDecorator,
+  ) {
+    return await this.productsService.modifyProductImage(id, file);
   }
+
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return await this.productsService.removeProduct(id);
+  }
+
 }

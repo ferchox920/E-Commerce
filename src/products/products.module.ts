@@ -33,6 +33,17 @@ import { AuthMiddleware } from 'src/shared/middleware/auth';
 export class ProductsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(AuthMiddleware).forRoutes(ProductsController);
+      .apply(AuthMiddleware)
+      .exclude(
+        {
+          path: `${config.get('appPrefix')}/products`,
+          method: RequestMethod.GET,
+        },
+        {
+          path: `${config.get('appPrefix')}/products/:id`,
+          method: RequestMethod.GET,
+        },
+      )
+      .forRoutes(ProductsController);
   }
 }
