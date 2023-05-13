@@ -29,15 +29,20 @@ export class ProductsService {
     success: boolean;
   }> {
     try {
+      // Check if productId already exists
+      await this.productDB.checkProductIdExists(createProductDto.productId);
+  
       // create a product in stripe
       if (!createProductDto.stripeProductId) {
         const createdProductInStripe = await this.stripeClient.products.create({
           name: createProductDto.productName,
           description: createProductDto.description,
         });
+        console.log(createdProductInStripe);
+        
         createProductDto.stripeProductId = createdProductInStripe.id;
       }
-
+  
       const createdProductInDB = await this.productDB.create(createProductDto);
       return {
         message: 'Product created successfully',
@@ -48,6 +53,7 @@ export class ProductsService {
       throw error;
     }
   }
+  
 
   async findProductById(id: string) {
     try {
@@ -152,11 +158,13 @@ export class ProductsService {
       if (!productExist) {
         throw new Error('Product does not exist');
       }
+      await this.productDB.checkProductIdExists(updateProductDto.productId);
       const updatedProduct = await this.productDB.findOneAndUpdate(
         { _id: id },
         updateProductDto,
       );
       if (!updateProductDto.stripeProductId)
+      
         await this.stripeClient.products.update(productExist.stripeProductId, {
           name: updateProductDto.productName,
           description: updateProductDto.description,
@@ -210,7 +218,9 @@ export class ProductsService {
           image: resOfCloudinary.secure_url,
         },
       );
-
+   
+      console.log(product.stripeProductId)
+      
       await this.stripeClient.products.update(product.stripeProductId, {
         images: [resOfCloudinary.secure_url],
       });

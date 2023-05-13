@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from 'src/products/dto/create-product.dto';
 import { Products } from '../schema/products';
 import { InjectModel } from '@nestjs/mongoose';
@@ -88,5 +88,12 @@ export class ProductRepository {
       new: true,
     });
     return product;
+  }
+
+  async checkProductIdExists(productId: string): Promise<void> {
+    const existingProduct = await this.productModel.findOne({ productId });
+    if (existingProduct) {
+      throw new BadRequestException(`Product with ID '${productId}' already exists`);
+    }
   }
 }
