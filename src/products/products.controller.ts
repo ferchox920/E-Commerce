@@ -33,10 +33,15 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@Query() query: GetProductQueryDto) {
-    return this.productsService.findAllProducts(query);
+  async findAll(@Query() query: GetProductQueryDto) {
+    return await this.productsService.findAllProducts(query);
   }
 
+  @Get(':productId')
+  async findProductById(@Param('productId') productId: string) {
+    return  await this.productsService.findProductById(productId);
+  
+    };
 
   @Patch(':id')
   @Roles(userTypes.ADMIN)

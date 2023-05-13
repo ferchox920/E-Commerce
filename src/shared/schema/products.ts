@@ -21,6 +21,10 @@ export const FeedbackSchema = SchemaFactory.createForClass(Feedbackers);
 
 @Schema({ timestamps: true })
 export class Products extends Document{
+
+  @Prop({ required: true })
+  productId: string;
+
   @Prop({ required: true })
   productName: string;
 

@@ -19,6 +19,10 @@ export class ProductRepository {
     const product = await this.productModel.findOne(query);
     return product;
   }
+  async findById(productId: string) {
+    return await this.productModel.findOne({ productId: productId });
+  }
+  
 
   async findProductWithGroupBy() {
     const products = await this.productModel.aggregate([

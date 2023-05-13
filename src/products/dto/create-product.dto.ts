@@ -8,6 +8,12 @@ export enum GenderType {
 }
 
 export class CreateProductDto {
+
+
+  @IsString()
+  @IsNotEmpty()
+  productId: string;
+  
   @IsString()
   @IsNotEmpty()
   productName: string;

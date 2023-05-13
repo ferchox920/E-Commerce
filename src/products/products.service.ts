@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { InjectStripe } from 'nestjs-stripe';
@@ -29,26 +29,19 @@ export class ProductsService {
     success: boolean;
   }> {
     try {
-      const { stripeProductId, ...productData } = createProductDto;
+      // create a product in stripe
+      if (!createProductDto.stripeProductId) {
+        const createdProductInStripe = await this.stripeClient.products.create({
+          name: createProductDto.productName,
+          description: createProductDto.description,
+        });
+        createProductDto.stripeProductId = createdProductInStripe.id;
+      }
 
-      // Si no se proporciona un id de producto de Stripe, crear un nuevo producto en Stripe
-      const stripeProduct = stripeProductId
-        ? await this.stripeClient.products.retrieve(stripeProductId)
-        : await this.stripeClient.products.create({
-            name: productData.productName,
-            description: productData.description,
-          });
-
-      // Crear un nuevo producto en la base de datos
-      const createdProduct = await this.productDB.create({
-        ...productData,
-        stripeProductId: stripeProduct.id,
-      });
-
-      // Devolver una respuesta con un mensaje de éxito, el producto creado y un booleano que indica el éxito
+      const createdProductInDB = await this.productDB.create(createProductDto);
       return {
         message: 'Product created successfully',
-        result: createdProduct,
+        result: createdProductInDB,
         success: true,
       };
     } catch (error) {
@@ -56,16 +49,31 @@ export class ProductsService {
     }
   }
 
+  async findProductById(id: string) {
+    try {
+      const product = await this.productDB.findById(id);
+
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+
+      return {
+        message: 'Product fetched successfully',
+        result: product,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
   async findAllProducts(query: GetProductQueryDto) {
     try {
       let callForHomePage = false;
       if (query.homepage) {
         callForHomePage = true;
-        delete query.homepage;
       }
-
+      delete query.homepage;
       const { criteria, options, links } = qs2m(query);
-
       if (callForHomePage) {
         const products = await this.productDB.findProductWithGroupBy();
         return {
@@ -77,20 +85,13 @@ export class ProductsService {
           success: true,
         };
       }
-
       const { totalProductCount, products } = await this.productDB.find(
         criteria,
         options,
       );
-
-      const result = products.map((product) => ({
-        id: product._id,
-        ...product.toJSON(),
-      }));
-
       return {
         message:
-          result.length > 0
+          products.length > 0
             ? 'Products fetched successfully'
             : 'No products found',
         result: {
@@ -103,7 +104,7 @@ export class ProductsService {
               : 1,
             links: links('/', totalProductCount),
           },
-          products: result,
+          products,
         },
         success: true,
       };
@@ -149,22 +150,19 @@ export class ProductsService {
     try {
       const productExist = await this.productDB.findOne({ _id: id });
       if (!productExist) {
-        throw new Error('El producto no existe');
+        throw new Error('Product does not exist');
       }
       const updatedProduct = await this.productDB.findOneAndUpdate(
         { _id: id },
         updateProductDto,
       );
       if (!updateProductDto.stripeProductId)
-        await this.stripeClient.products.update(
-          updatedProduct.stripeProductId,
-          {
-            name: updateProductDto.productName,
-            description: updateProductDto.description,
-          },
-        );
+        await this.stripeClient.products.update(productExist.stripeProductId, {
+          name: updateProductDto.productName,
+          description: updateProductDto.description,
+        });
       return {
-        message: 'Producto actualizado exitosamente',
+        message: 'Product updated successfully',
         result: updatedProduct,
         success: true,
       };
@@ -303,5 +301,4 @@ export class ProductsService {
       throw error;
     }
   }
-
 }

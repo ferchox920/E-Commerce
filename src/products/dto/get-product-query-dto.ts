@@ -1,6 +1,9 @@
 import { IsString, IsEnum, IsOptional, IsInt } from 'class-validator';
 
 export class GetProductQueryDto {
+
+  
+    productId: string;
     
     homepage?: string;
 
