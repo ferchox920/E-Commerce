@@ -6,7 +6,7 @@ import cloudinary from 'cloudinary';
 import qs2m from 'qs-to-mongo';
 import { unlinkSync } from 'fs';
 import config from 'config';
-import Stripe from 'stripe';
+
 import { Products } from 'src/shared/schema/products';
 import { GetProductQueryDto } from './dto/get-product-query-dto';
 
@@ -15,7 +15,7 @@ export class ProductsService {
   constructor(
     @Inject(ProductRepository) private readonly productDB: ProductRepository,
 
-    @InjectStripe() private readonly stripeClient: Stripe,
+
   ) {
     cloudinary.v2.config({
       cloud_name: config.get('cloudinary.cloud_name'),
@@ -32,16 +32,7 @@ export class ProductsService {
       // Check if productId already exists
       await this.productDB.checkProductIdExists(createProductDto.productId);
   
-      // create a product in stripe
-      if (!createProductDto.stripeProductId) {
-        const createdProductInStripe = await this.stripeClient.products.create({
-          name: createProductDto.productName,
-          description: createProductDto.description,
-        });
-        console.log(createdProductInStripe);
-        
-        createProductDto.stripeProductId = createdProductInStripe.id;
-      }
+  
   
       const createdProductInDB = await this.productDB.create(createProductDto);
       return {
@@ -163,12 +154,7 @@ export class ProductsService {
         { _id: id },
         updateProductDto,
       );
-      if (!updateProductDto.stripeProductId)
-      
-        await this.stripeClient.products.update(productExist.stripeProductId, {
-          name: updateProductDto.productName,
-          description: updateProductDto.description,
-        });
+    
       return {
         message: 'Product updated successfully',
         result: updatedProduct,
@@ -219,12 +205,7 @@ export class ProductsService {
         },
       );
    
-      console.log(product.stripeProductId)
-      
-      await this.stripeClient.products.update(product.stripeProductId, {
-        images: [resOfCloudinary.secure_url],
-      });
-
+    
       return {
         message: 'Image uploaded successfully',
         success: true,
@@ -276,10 +257,7 @@ export class ProductsService {
         },
       );
 
-      await this.stripeClient.products.update(product.stripeProductId, {
-        images: [resOfCloudinary.secure_url],
-      });
-
+  
       return {
         message: 'Image modified successfully',
         success: true,
@@ -301,7 +279,7 @@ export class ProductsService {
         throw new Error('Product does not exist');
       }
       await this.productDB.findOneAndDelete({ _id: id });
-      await this.stripeClient.products.del(productExist.stripeProductId);
+   
       return {
         message: 'Product deleted successfully',
         success: true,

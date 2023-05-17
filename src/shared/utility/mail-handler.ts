@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import config from 'config';
-import { link } from 'fs';
+
 
 export const sendEmail = async (
   to: string,

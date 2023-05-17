@@ -80,7 +80,5 @@ export class Products extends Document{
   @Prop({})
   highlights: string[];
 
-  @Prop({})
-  stripeProductId: string;
 }
 export const ProductSchema = SchemaFactory.createForClass(Products);

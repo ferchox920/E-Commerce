@@ -6,6 +6,7 @@ import config from 'config';
 import { AllExceptionFilter } from './httpExceptionFilter';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
+import { MercadoPagoModule } from './mercado-pago/mercado-pago.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ProductsModule } from './products/products.module';
     }),
     UsersModule,
     ProductsModule,
+    MercadoPagoModule,
   ],
   controllers: [AppController],
   providers: [AppService,{

@@ -24,10 +24,6 @@ import { AuthMiddleware } from 'src/shared/middleware/auth';
     MongooseModule.forFeature([{ name: Products.name, schema: ProductSchema }]),
     MongooseModule.forFeature([{ name: Users.name, schema: UserSchema }]),
    
-    StripeModule.forRoot({
-      apiKey: config.get('stripe.secret_key'),
-      apiVersion: '2022-11-15',
-    }),
   ],
 })
 export class ProductsModule implements NestModule {

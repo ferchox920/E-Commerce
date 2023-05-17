@@ -33,6 +33,7 @@
     "config": "^3.3.9",
     "cookie-parser": "^1.4.6",
     "jsonwebtoken": "^9.0.0",
+    "mercadopago": "^1.5.16",
     "mongoose": "^7.0.5",
     "nodemailer": "^6.9.1",
     "qs-to-mongo": "^3.0.0",
