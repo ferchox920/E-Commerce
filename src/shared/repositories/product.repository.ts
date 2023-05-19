@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateProductDto } from 'src/products/dto/create-product.dto';
 import { Products } from '../schema/products';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -10,7 +9,7 @@ export class ProductRepository {
   constructor(
     @InjectModel(Products.name) private readonly productModel: Model<Products>,
   ) {}
-  async create(product: CreateProductDto) {
+  async create(product: any) {
     const createdProduct = await this.productModel.create(product);
     return createdProduct;
   }
