@@ -1,13 +1,24 @@
-import config from 'config';
-import { AuthMiddleware } from 'src/shared/middleware/auth';
-import { RolesGuard } from 'src/shared/middleware/roles.guard';
-import { APP_GUARD } from '@nestjs/core';
-import { OrdersController } from './orders.controller';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { OrdersController } from './orders.controller';
 import { UserRepository } from 'src/shared/repositories/user.repository';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { OrdersRepository } from 'src/shared/repositories/order.repository';
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from 'src/shared/middleware/roles.guard';
+import { StripeModule } from 'nestjs-stripe';
+import config from 'config';
+import { Products, ProductSchema } from 'src/shared/schema/products';
+
+import { Orders, OrderSchema } from 'src/shared/schema/orders';
+import { Users, UserSchema } from 'src/shared/schema/user';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthMiddleware } from 'src/shared/middleware/auth';
 
 @Module({
   controllers: [OrdersController],
@@ -21,14 +32,19 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
       useClass: RolesGuard,
     },
   ],
-
+  imports: [
+   
+    MongooseModule.forFeature([{ name: Products.name, schema: ProductSchema }]),
+    MongooseModule.forFeature([{ name: Users.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: Orders.name, schema: OrderSchema }]),
+  ],
 })
 export class OrdersModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
       .exclude({
-        path: `${config.get('appPrefix')}/orders`,
+        path: `${config.get('appPrefix')}/orders/webhook`,
         method: RequestMethod.POST,
       })
       .forRoutes(OrdersController);

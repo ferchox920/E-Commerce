@@ -52,8 +52,8 @@ export class Orders {
   @Prop({ required: true })
   customerPhoneNumber: string;
 
-  @Prop({ required: true, type: [OrderedItems] })
-  orderedItems: OrderedItems[];
+  // @Prop({ required: true, type: [OrderedItems] })
+  // orderedItems: OrderedItems[];
 
   @Prop({ required: true, type: Object })
   paymentInfo: {
