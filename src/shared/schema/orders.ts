@@ -27,12 +27,8 @@ export class OrderedItems {
   @Prop({ required: true })
   validity: number;
 
-
-
   @Prop({ required: true })
   productName: string;
-
-
 }
 
 @Schema({ timestamps: true })
@@ -56,7 +52,7 @@ export class Orders {
   @Prop({ required: true })
   customerPhoneNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: [OrderedItems] })
   orderedItems: OrderedItems[];
 
   @Prop({ required: true, type: Object })
@@ -77,4 +73,5 @@ export class Orders {
   @Prop({ default: null })
   checkoutSessionId: string;
 }
+
 export const OrderSchema = SchemaFactory.createForClass(Orders);
