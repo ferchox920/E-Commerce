@@ -73,6 +73,14 @@ export class ProductsController {
   async addFeedback(@Param('id') id: string, @Body() feedback: Feedbackers) {
     return await this.productsService.addFeedback(id, feedback);
   }
+  @Delete(':id/feedback/:feedbackId')
+  @Roles(userTypes.ADMIN)
+  async deleteFeedback(
+    @Param('id') id: string,
+    @Param('feedbackId') feedbackId: string,
+  ) {
+    return await this.productsService.deleteFeedback(id, feedbackId);
+  }
 
   @Put('/:id/image')
   @Roles(userTypes.ADMIN)
@@ -92,6 +100,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @Roles(userTypes.ADMIN)
   async remove(@Param('id') id: string) {
     return await this.productsService.removeProduct(id);
   }

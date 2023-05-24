@@ -82,6 +82,37 @@ export class ProductsService {
     }
   }
   
+  async deleteFeedback(id: string, feedbackId: string) {
+    try {
+      const product = await this.productDB.findById(id);
+   
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+  
+      const feedbackIndex = product.feedbackDetails.findIndex(
+        (feedback) => feedback._id.equals(feedbackId),
+      );
+      
+      if (feedbackIndex === -1) {
+        throw new NotFoundException('Feedback not found');
+      }
+  
+      product.feedbackDetails.splice(feedbackIndex, 1);
+  
+      await product.save();
+  
+      return {
+        message: 'Feedback deleted successfully',
+        result: product,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  
 
   async findAllProducts(query: GetProductQueryDto) {
     try {
