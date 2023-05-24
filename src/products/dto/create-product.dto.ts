@@ -78,4 +78,8 @@ export class CreateProductDto {
 
   @IsOptional()
   stripeProductId?: string;
+
+  feedees:{
+    
+  }
 }

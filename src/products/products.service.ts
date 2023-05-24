@@ -7,7 +7,7 @@ import qs2m from 'qs-to-mongo';
 import { unlinkSync } from 'fs';
 import config from 'config';
 
-import { Products } from 'src/shared/schema/products';
+import { Feedbackers, Products } from 'src/shared/schema/products';
 import { GetProductQueryDto } from './dto/get-product-query-dto';
 
 @Injectable()
@@ -31,9 +31,6 @@ export class ProductsService {
     try {
       // Check if productId already exists
       await this.productDB.checkProductIdExists(createProductDto.productId);
-  
-  
-  
       const createdProductInDB = await this.productDB.create(createProductDto);
       return {
         message: 'Product created successfully',
@@ -63,6 +60,29 @@ export class ProductsService {
       throw error;
     }
   }
+  async addFeedback(id: string, feedback: Feedbackers) {
+    try {
+      const product = await this.productDB.findById(id);
+  
+      if (!product) {
+        throw new NotFoundException('Product not found');
+      }
+  
+      product.feedbackDetails.push(feedback);
+  
+      await product.save();
+  
+      return {
+        message: 'Feedback added successfully',
+        result: product,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+
   async findAllProducts(query: GetProductQueryDto) {
     try {
       let callForHomePage = false;

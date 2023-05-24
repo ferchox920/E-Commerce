@@ -20,6 +20,7 @@ import { userTypes } from 'src/shared/schema/user';
 import config from 'config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetProductQueryDto } from './dto/get-product-query-dto';
+import { Feedbackers } from 'src/shared/schema/products';
 
 @Controller('products')
 export class ProductsController {
@@ -39,9 +40,8 @@ export class ProductsController {
 
   @Get(':productId')
   async findProductById(@Param('productId') productId: string) {
-    return  await this.productsService.findProductById(productId);
-  
-    };
+    return await this.productsService.findProductById(productId);
+  }
 
   @Patch(':id')
   @Roles(userTypes.ADMIN)
@@ -69,6 +69,11 @@ export class ProductsController {
     return await this.productsService.uploadProductImage(id, file);
   }
 
+  @Post(':id/feedback')
+  async addFeedback(@Param('id') id: string, @Body() feedback: Feedbackers) {
+    return await this.productsService.addFeedback(id, feedback);
+  }
+
   @Put('/:id/image')
   @Roles(userTypes.ADMIN)
   @UseInterceptors(
@@ -86,10 +91,8 @@ export class ProductsController {
     return await this.productsService.modifyProductImage(id, file);
   }
 
-
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.productsService.removeProduct(id);
   }
-
 }

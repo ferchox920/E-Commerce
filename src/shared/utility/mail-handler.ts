@@ -46,7 +46,7 @@ const getEmailTemplate = (templateName: string, templateVars: Record<string, any
         return `<p>Bienvenido a CHE QUE BARATO!</p>
                 <p>${templateVars.customerName}</p>
                 <p>Gracias por unirte a nosotros. Esperamos que disfrutes de tus compras en nuestra tienda en línea.</p>
-                <a href="http://${config.get('host')}:${config.get('port')}/users/verify-email/${templateVars.otp}/${templateVars.customerEmail}">Haz clic aquí para verificar tu correo electrónico</a>
+                <a href="http://${config.get('host')}:${config.get('port')}${config.get('appPrefix')}/users/verify-email/${templateVars.otp}/${templateVars.customerEmail}">Haz clic aquí para verificar tu correo electrónico</a>
                 <p>Para acceder a tu cuenta, utiliza el correo electrónico y la contraseña que proporcionaste al registrarte.</p>
                 <p>¡Que tengas un gran día!</p>`;
 
