@@ -1,5 +1,4 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { InjectStripe } from 'nestjs-stripe';
 import { OrdersRepository } from 'src/shared/repositories/order.repository';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { UserRepository } from 'src/shared/repositories/user.repository';

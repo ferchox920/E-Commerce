@@ -30,6 +30,7 @@
     "@types/nodemailer": "^6.4.7",
     "bcrypt": "^5.1.0",
     "class-validator": "^0.14.0",
+    "cloudinary": "^1.37.0",
     "config": "^3.3.9",
     "cookie-parser": "^1.4.6",
     "jsonwebtoken": "^9.0.0",

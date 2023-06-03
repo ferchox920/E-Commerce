@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
-import { InjectStripe } from 'nestjs-stripe';
 import cloudinary from 'cloudinary';
 import qs2m from 'qs-to-mongo';
 import { unlinkSync } from 'fs';
@@ -14,7 +13,6 @@ import { GetProductQueryDto } from './dto/get-product-query-dto';
 export class ProductsService {
   constructor(
     @Inject(ProductRepository) private readonly productDB: ProductRepository,
-
 
   ) {
     cloudinary.v2.config({
