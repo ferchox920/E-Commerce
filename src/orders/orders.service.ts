@@ -22,9 +22,17 @@ export class OrdersService {
       const orderExists = await this.orderDB.findOne({
         checkoutSessionId: createOrderDto.checkoutSessionId,
       });
-      if (orderExists) return orderExists;
+      if (orderExists) return {
+        success: false,
+        result: orderExists,
+        message: 'The order exists',
+      };
       const result = await this.orderDB.create(createOrderDto);
-      return result;
+      return  {
+        success: true,
+        result: result,
+        message: 'Created successfully',
+      };;
     } catch (error) {
       throw error;
     }
@@ -42,7 +50,7 @@ export class OrdersService {
       if (status) {
         query.status = status;
       }
-      const orders = await this.orderDB.find(query);
+      const orders = await this.orderDB.findOne(query);
       return {
         success: true,
         result: orders,
@@ -79,4 +87,42 @@ export class OrdersService {
 
   // Otros métodos y funcionalidades relacionadas con el servicio "OrdersService"
 
+  async completeOrder(orderId: string) {
+    try {
+      const order = await this.orderDB.findOne({ _id: orderId });
+
+      if (!order) {
+        throw new BadRequestException('Order not found');
+      }
+
+      if (order.orderStatus === 'completed') {
+        throw new BadRequestException('Order is already completed');
+      }
+
+      order.orderStatus
+      // Update the order status in the database
+      await order.save();
+
+      // Update the product stock
+      for (const item of order.orderedItems) {
+        const product = await this.productDB.findOne({ productId: item.productId });
+
+        if (!product) {
+          throw new BadRequestException(`Product with ID ${item.productId} not found`);
+        }
+
+        product.stock -= item.quantity;
+
+        // Update the product stock in the database
+        await product.save();
+      }
+
+      return {
+        success: true,
+        message: 'Order completed successfully',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

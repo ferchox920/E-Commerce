@@ -9,10 +9,6 @@ export class OrdersRepository {
     @InjectModel(Orders.name) private readonly orderModel: Model<Orders>,
   ) {}
 
-  async find(query: any) {
-    const order = await this.orderModel.find(query);
-    return order;
-  }
 
   async findOne(query: any) {
     const order = await this.orderModel.findOne(query);
