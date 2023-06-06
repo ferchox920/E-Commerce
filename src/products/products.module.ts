@@ -8,7 +8,6 @@ import { RolesGuard } from 'src/shared/middleware/roles.guard';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductSchema, Products } from 'src/shared/schema/products';
 import { UserSchema, Users } from 'src/shared/schema/user';
-import { StripeModule } from 'nestjs-stripe';
 import config from 'config';
 import { AuthMiddleware } from 'src/shared/middleware/auth';
 

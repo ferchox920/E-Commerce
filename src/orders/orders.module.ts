@@ -11,7 +11,6 @@ import { ProductRepository } from 'src/shared/repositories/product.repository';
 import { OrdersRepository } from 'src/shared/repositories/order.repository';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from 'src/shared/middleware/roles.guard';
-import { StripeModule } from 'nestjs-stripe';
 import config from 'config';
 import { Products, ProductSchema } from 'src/shared/schema/products';
 

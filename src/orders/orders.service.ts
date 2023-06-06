@@ -1,13 +1,13 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { InjectStripe } from 'nestjs-stripe';
 import { OrdersRepository } from 'src/shared/repositories/order.repository';
 import { ProductRepository } from 'src/shared/repositories/product.repository';
-import { UserRepository } from 'src/shared/repositories/user.repository';
+import { UserRepository } from 'src/shared/repositories/user.repository'
 
 import config from 'config';
 
 import { userTypes } from 'src/shared/schema/user';
 import { sendEmail } from 'src/shared/utility/mail-handler';
+import { orderStatus } from 'src/shared/schema/orders';
 
 @Injectable()
 export class OrdersService {
@@ -43,14 +43,19 @@ export class OrdersService {
       const userDetails = await this.userDB.findOne({
         _id: user._id.toString(),
       });
-      const query = {} as Record<string, any>;
+
+      const query: Record<string, any> = {};
+
       if (userDetails.type === userTypes.CUSTOMER) {
         query.userId = user._id.toString();
       }
+
       if (status) {
         query.status = status;
       }
+
       const orders = await this.orderDB.findOne(query);
+
       return {
         success: true,
         result: orders,
@@ -60,11 +65,12 @@ export class OrdersService {
       throw error;
     }
   }
+
   async sendOrderEmail(email: string, orderId: string, orderLink: string) {
     await sendEmail(
       email,
       config.get('emailTemplates.orderSuccess'),
-      'Order Success ',
+      'Order Success',
       {
         orderId,
         orderLink,
@@ -72,9 +78,51 @@ export class OrdersService {
     );
   }
 
+  async markOrderAsCompleted(orderId: string) {
+    try {
+      const order = await this.orderDB.findOne({ _id: orderId });
+  
+      if (!order) {
+        throw new BadRequestException('Order not found');
+      }
+  
+      if (order.orderStatus === orderStatus.completed) {
+        throw new BadRequestException('Order already marked as completed');
+      }
+  
+      order.orderStatus = orderStatus.completed;
+      await order.save();
+  
+      // Actualizar el stock de los productos en la orden
+      for (const item of order.orderedItems) {
+        const product = await this.productDB.findOne({ productId: item.productId });
+  
+        if (!product) {
+          throw new BadRequestException(`Product with ID ${item.productId} not found`);
+        }
+  
+        if (item.quantity > product.stock) {
+          throw new BadRequestException(`Insufficient stock for product with ID ${item.productId}`);
+        }
+  
+        product.stock -= item.quantity;
+        await product.save();
+      }
+  
+      return {
+        success: true,
+        message: 'Order marked as completed',
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+
   async findOne(id: string) {
     try {
       const result = await this.orderDB.findOne({ _id: id });
+
       return {
         success: true,
         result,
